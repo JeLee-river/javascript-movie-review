@@ -10,6 +10,10 @@
   --color-yellow: #ffc700;
   --color-ffffff: #ffffff;
   --color-242a32: #242a32;
+
+  --z-index-backdrop: 10;
+  --z-index-default: 2;
+  --z-index-overlay: 1;
 }
 * {
   box-sizing: border-box;
@@ -86,12 +90,12 @@ button.primary {
   background-position: center;
   width: 100%;
   height: 100%;
-  z-index: 1;
+  z-index: var(--z-index-overlay);
 }
 .top-rated-container {
   user-select: none;
   position: relative;
-  z-index: 2;
+  z-index: var(--z-index-default);
   max-width: 1280px;
   margin: 0 auto;
 }
@@ -212,7 +216,7 @@ body.modal-open {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 10;
+  z-index: var(--z-index-backdrop);
   visibility: hidden; /* 모달이 기본적으로 보이지 않도록 설정 */
   opacity: 0;
   transition: opacity 0.3s ease, visibility 0.3s ease;
@@ -226,7 +230,7 @@ body.modal-open {
   padding: 20px;
   border-radius: 16px;
   color: white;
-  z-index: 2;
+  z-index: var(--z-index-default);
   position: relative;
   width: 1000px;
 }
@@ -603,6 +607,7 @@ table {
   flex-direction: column;
   gap: 16px;
   align-items: center;
+  text-align: center;
 }
 .hidden {
   display: none !important;
@@ -619,7 +624,7 @@ table {
     justify-content: center;
   }
 }
-.search-container {
+#search-container {
   display: flex;
   width: 525px;
   height: 36px;
@@ -650,7 +655,7 @@ table {
   cursor: pointer;
 }
 @media (max-width: 1200px) {
-  .search-container {
+  #search-container {
     width: 100%;
     max-width: 600px;
     margin: 24px 0;
