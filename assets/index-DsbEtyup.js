@@ -6,7 +6,7 @@ var __privateGet = (obj, member, getter) => (__accessCheck(obj, member, "read fr
 var __privateAdd = (obj, member, value) => member.has(obj) ? __typeError("Cannot add the same private member more than once") : member instanceof WeakSet ? member.add(obj) : member.set(obj, value);
 var __privateSet = (obj, member, value, setter) => (__accessCheck(obj, member, "write to private field"), setter ? setter.call(obj, value) : member.set(obj, value), value);
 var __privateMethod = (obj, member, method) => (__accessCheck(obj, member, "access private method"), method);
-var _id, _title, _onClick, _type, _status, _message, _element, _ErrorUI_instances, handleClickRoutingHome_fn, _instance, _topMovie, _id2, _title2, _voteAverage, _posterPath, _title3, _releaseYear, _genres, _voteAverage2, _MovieDetailsHeader_instances, createTitle_fn, createCategory_fn, createRate_fn, _posterPath2, _title4, _id3, _rate, _element2, _UserRating_instances, init_fn, createStars_fn, createRateMessage_fn, onRateBoxClick_fn, onInitialRateClick_fn, handleRateHover_fn, _ratingMovie, _id4, _rate2, _details, _element3, _MovieItemDetails_instances, createPoster_fn, createDescription_fn, createHeader_fn, createOverview_fn, createDivider_fn, createVotingRate_fn, _movieList, _totalItems, _container, _parent, _element4, _instance2, _NonResultUI_instances, create_fn, createImage_fn, createMessage_fn, _element5, _instance3, _SkeletonUl_instances, create_fn2, createSkeletonLi_fn, _element6, _query, _SearchBar_instances, onSearch_fn, updateMovieList_fn, onSubmitQuery_fn, createInputBar_fn, createInputImage_fn, changeTitleStyle_fn, createResultMovieItems_fn, getSearchResults_fn, _element7, _Modal_instances, close_fn, onClickCloseButton_fn, onClickBackground_fn, onKeydownEscape_fn;
+var _id, _title, _onClick, _type, _status, _message, _element, _ErrorUI_instances, handleClickRoutingHome_fn, _instance, _topMovie, _id2, _title2, _voteAverage, _posterPath, _title3, _releaseYear, _genres, _voteAverage2, _MovieDetailsHeader_instances, createTitle_fn, createCategory_fn, createRate_fn, _overview, _posterPath2, _title4, _id3, _rate, _element2, _UserRating_instances, init_fn, createStars_fn, createRateMessage_fn, onRateBoxClick_fn, onInitialRateClick_fn, handleRateHover_fn, _ratingMovie, _id4, _rate2, _details, _element3, _MovieItemDetails_instances, createPoster_fn, createDescription_fn, createHeader_fn, createOverview_fn, createDivider_fn, createVotingRate_fn, _movieList, _totalItems, _container, _parent, _element4, _instance2, _NonResultUI_instances, create_fn, createImage_fn, createMessage_fn, _element5, _instance3, _SkeletonUl_instances, create_fn2, createSkeletonLi_fn, _element6, _query, _SearchBar_instances, onSearch_fn, updateMovieList_fn, onSubmitQuery_fn, createInputBar_fn, createInputImage_fn, changeTitleStyle_fn, createResultMovieItems_fn, getSearchResults_fn, _element7, _Modal_instances, close_fn, onClickCloseButton_fn, onClickBackground_fn, onKeydownEscape_fn;
 (function polyfill() {
   const relList = document.createElement("link").relList;
   if (relList && relList.supports && relList.supports("modulepreload")) {
@@ -534,6 +534,19 @@ createRate_fn = function() {
   rate.insertAdjacentHTML("beforeend", rateContents);
   return rate;
 };
+class MovieOverview {
+  constructor({ overview }) {
+    __privateAdd(this, _overview);
+    __privateSet(this, _overview, overview);
+  }
+  create() {
+    const overview = document.createElement("p");
+    overview.classList.add("detail");
+    overview.textContent = __privateGet(this, _overview);
+    return overview;
+  }
+}
+_overview = new WeakMap();
 class MoviePoster {
   constructor({ posterPath, title }) {
     __privateAdd(this, _posterPath2);
@@ -721,11 +734,12 @@ createHeader_fn = function(description) {
 createOverview_fn = function(description) {
   const h3 = document.createElement("h3");
   h3.textContent = "줄거리";
-  const overview = document.createElement("p");
-  overview.classList.add("detail");
-  overview.textContent = __privateGet(this, _details).overview;
+  const { overview } = __privateGet(this, _details);
+  const movieOverview = new MovieOverview({
+    overview
+  }).create();
   description.insertAdjacentElement("beforeend", h3);
-  description.insertAdjacentElement("beforeend", overview);
+  description.insertAdjacentElement("beforeend", movieOverview);
 };
 createDivider_fn = function(description) {
   const hr = document.createElement("hr");
