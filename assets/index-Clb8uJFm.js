@@ -6,7 +6,7 @@ var __privateGet = (obj, member, getter) => (__accessCheck(obj, member, "read fr
 var __privateAdd = (obj, member, value) => member.has(obj) ? __typeError("Cannot add the same private member more than once") : member instanceof WeakSet ? member.add(obj) : member.set(obj, value);
 var __privateSet = (obj, member, value, setter) => (__accessCheck(obj, member, "write to private field"), setter ? setter.call(obj, value) : member.set(obj, value), value);
 var __privateMethod = (obj, member, method) => (__accessCheck(obj, member, "access private method"), method);
-var _id, _title, _onClick, _type, _status, _message, _element, _ErrorUI_instances, handleClickRoutingHome_fn, _instance, _topMovie, _id2, _title2, _voteAverage, _posterPath, _title3, _releaseYear, _genres, _voteAverage2, _MovieDetailsHeader_instances, createTitle_fn, createCategory_fn, createRate_fn, _overview, _posterPath2, _title4, _id3, _rate, _element2, _UserRating_instances, init_fn, createStars_fn, createRateMessage_fn, onRateBoxClick_fn, onInitialRateClick_fn, handleRateHover_fn, _ratingMovie, _id4, _rate2, _details, _element3, _MovieItemDetails_instances, createPoster_fn, createDescription_fn, createHeader_fn, createOverview_fn, createDivider_fn, createVotingRate_fn, _movieList, _totalItems, _container, _parent, _element4, _instance2, _NonResultUI_instances, create_fn, createImage_fn, createMessage_fn, _element5, _instance3, _SkeletonUl_instances, create_fn2, createSkeletonLi_fn, _element6, _query, _SearchBar_instances, onSearch_fn, updateMovieList_fn, onSubmitQuery_fn, createInputBar_fn, createInputImage_fn, changeTitleStyle_fn, createResultMovieItems_fn, getSearchResults_fn, _element7, _Modal_instances, close_fn, onClickCloseButton_fn, onClickBackground_fn, onKeydownEscape_fn;
+var _instance, _topMovie, _id, _title, _onClick, _type, _status, _message, _element, _ErrorUI_instances, handleClickRoutingHome_fn, _id2, _title2, _voteAverage, _posterPath, _title3, _releaseYear, _genres, _voteAverage2, _MovieDetailsHeader_instances, createTitle_fn, createCategory_fn, createRate_fn, _overview, _posterPath2, _title4, _id3, _rate, _element2, _UserRating_instances, init_fn, createStars_fn, createRateMessage_fn, onRateBoxClick_fn, onInitialRateClick_fn, handleRateHover_fn, _ratingMovie, _id4, _rate2, _details, _element3, _MovieItemDetails_instances, createPoster_fn, createDescription_fn, createHeader_fn, createOverview_fn, createDivider_fn, createVotingRate_fn, _movieList, _totalItems, _container, _parent, _element4, _instance2, _NonResultUI_instances, create_fn, createImage_fn, createMessage_fn, _element5, _instance3, _SkeletonUl_instances, create_fn2, createSkeletonLi_fn, _element6, _query, _SearchBar_instances, onSearch_fn, updateMovieList_fn, onSubmitQuery_fn, createInputBar_fn, createInputImage_fn, changeTitleStyle_fn, createResultMovieItems_fn, getSearchResults_fn, _element7, _Modal_instances, close_fn, onClickCloseButton_fn, onClickBackground_fn, onKeydownEscape_fn;
 (function polyfill() {
   const relList = document.createElement("link").relList;
   if (relList && relList.supports && relList.supports("modulepreload")) {
@@ -45,13 +45,222 @@ var _id, _title, _onClick, _type, _status, _message, _element, _ErrorUI_instance
   }
 })();
 const ERROR = {
-  DEFAULT: "문제가 발생했습니다. 관리자에게 문의해 주세요.",
-  NETWORK_ERROR_MESSAGE: "Failed to fetch"
+  DEFAULT: "문제가 발생했습니다. 관리자에게 문의해 주세요."
 };
 const STATUS_MESSAGE = {
   404: "페이지를 찾을 수 없습니다. 잠시 후에 다시 시도해주세요.",
   500: "서버에 문제가 발생했습니다. 잠시 후에 다시 시도해주세요.",
   503: "서비스를 이용할 수 없습니다. 잠시 후에 다시 시도해주세요."
+};
+const TMDB_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1NjQxN2MwZDNkYmUzMjA5NGI5MjI2OTk2MzljNGQ4YSIsIm5iZiI6MTc0MjI3OTY4MS41NTgsInN1YiI6IjY3ZDkxNDAxZTFlM2NkY2JmOWM2YTQyNSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.U1Ea23_icQxUqe9m-t80lX49HV6QQJlFrMAGZJjpIvk";
+const BASE_URL = "https://api.themoviedb.org/3";
+const OPTION = {
+  language: "ko-KR",
+  region: "KR"
+};
+const options = {
+  method: "GET",
+  headers: {
+    Authorization: `Bearer ${TMDB_TOKEN}`
+  }
+};
+const api = {
+  async GETWithAuth(endpoint) {
+    const url = `${BASE_URL}${endpoint}`;
+    const response = await fetch(url, options);
+    if (!response.ok) {
+      throw new Error(response.status.toString());
+    }
+    return await response.json();
+  }
+};
+const defaultParams = {
+  language: OPTION.language,
+  region: OPTION.region
+};
+const movieApi = {
+  async getMovieData(pageNumber) {
+    const params = new URLSearchParams({
+      ...defaultParams,
+      page: pageNumber.toString()
+    }).toString();
+    const endpoint = `/movie/popular?${params}`;
+    return await api.GETWithAuth(endpoint);
+  },
+  async getSearchData(pageNumber, query) {
+    const params = new URLSearchParams({
+      ...defaultParams,
+      page: pageNumber.toString(),
+      query
+    }).toString();
+    const endpoint = `/search/movie?${params}`;
+    return await api.GETWithAuth(endpoint);
+  },
+  async getMovieDetailsData(id) {
+    const params = new URLSearchParams({
+      ...defaultParams
+    }).toString();
+    const endpoint = `/movie/${id}?${params}`;
+    return await api.GETWithAuth(endpoint);
+  }
+};
+const KEY = {
+  movieList: "movieList"
+};
+const IMAGE = {
+  prefix: "https://media.themoviedb.org/t/p/w440_and_h660_face",
+  backdropPrefix: "https://image.tmdb.org/t/p/w1920_and_h800_multi_faces"
+};
+const ITEMS = {
+  perPage: 20,
+  initialCount: 0
+};
+const DETAILS = {
+  defaultOverview: "줄거리 정보가 없습니다."
+};
+const VOTE = {
+  rateDegit: 1,
+  defaultRate: 0,
+  MaximumRate: 10,
+  maximumIconCount: 5,
+  unitRate: 2,
+  noticeMessage: "평점 없음",
+  filledStarImage: "./images/star_filled.png",
+  emptyStarImage: "./images/star_empty.png"
+};
+const RATING_SCORE = {
+  1: 2,
+  2: 4,
+  3: 6,
+  4: 8,
+  5: 10
+};
+const RATING_MESSAGE = {
+  2: "최악이예요",
+  4: "별로예요",
+  6: "보통이에요",
+  8: "재미있어요",
+  10: "명작이에요"
+};
+const calculatePageNumber = (totalMovies) => {
+  return Math.ceil(totalMovies / ITEMS.perPage) + 1;
+};
+const getMovieRate = (movieRate) => {
+  return movieRate ? movieRate.rate : VOTE.defaultRate;
+};
+const calculateFilledStar = (rate) => {
+  return rate / VOTE.unitRate;
+};
+const extractTotalMovies = (totalData) => {
+  const { results, total_pages, total_results, page } = totalData;
+  const movies = results.map((movieData) => extractMovie(movieData));
+  return {
+    results: movies,
+    totalPages: total_pages,
+    totalResults: total_results,
+    page
+  };
+};
+const extractMovie = (movieData) => {
+  const { id, backdrop_path, poster_path, title, vote_average } = movieData;
+  const backdropPath = IMAGE.backdropPrefix + backdrop_path;
+  const posterPath = IMAGE.prefix + poster_path;
+  const voteAverage = Number(vote_average.toFixed(VOTE.rateDegit));
+  return {
+    id,
+    backdropPath,
+    posterPath,
+    title,
+    voteAverage
+  };
+};
+const extractMovieDetails = (movieDetailsData, movieRate) => {
+  const {
+    genres,
+    id,
+    overview,
+    poster_path,
+    release_date,
+    title,
+    vote_average
+  } = movieDetailsData;
+  const genreNames = genres.map(({ name }) => name);
+  const formattedOverview = overview === "" ? DETAILS.defaultOverview : overview;
+  const posterPath = IMAGE.prefix + poster_path;
+  const releaseYear = new Date(release_date).getFullYear();
+  const voteAverage = Number(vote_average.toFixed(VOTE.rateDegit));
+  const rate = getMovieRate(movieRate);
+  return {
+    genres: genreNames,
+    id,
+    overview: formattedOverview,
+    posterPath,
+    releaseYear,
+    title,
+    voteAverage,
+    rate
+  };
+};
+const storage = {
+  localStorage: window.localStorage,
+  getData(key) {
+    const data = this.localStorage.getItem(key) ?? "[]";
+    return JSON.parse(data);
+  },
+  setData(key, data) {
+    const stringifyData = JSON.stringify(data);
+    this.localStorage.setItem(key, stringifyData);
+  }
+};
+const movieService = {
+  async getMovies(totalCount) {
+    const pageNumber = calculatePageNumber(totalCount);
+    const rawData = await movieApi.getMovieData(pageNumber);
+    return extractTotalMovies(rawData);
+  },
+  async searchMovies(totalCount, query) {
+    const pageNumber = calculatePageNumber(totalCount);
+    const rawData = await movieApi.getSearchData(pageNumber, query);
+    return extractTotalMovies(rawData);
+  },
+  async getMovieDetail(movieId) {
+    const rawData = await movieApi.getMovieDetailsData(movieId);
+    const movieRate = this.getRateById(movieId) ?? { rate: 0 };
+    return extractMovieDetails(rawData, movieRate);
+  },
+  getRateList() {
+    const rate = storage.getData(KEY.movieList);
+    return rate;
+  },
+  getRateById(movieId) {
+    const totalMovieRates = this.getRateList();
+    const targetRate = totalMovieRates.find(({ id }) => {
+      return id === movieId;
+    });
+    return targetRate ?? null;
+  },
+  updateRateById(id, newData) {
+    const totalMovieRates = this.getRateList();
+    const storedMoviesRates = totalMovieRates.filter(
+      (data) => {
+        return data.id !== id;
+      }
+    );
+    const newMovieList = [...storedMoviesRates, newData];
+    storage.setData(KEY.movieList, newMovieList);
+  },
+  addRate(data) {
+    const totalMovieRates = this.getRateList();
+    const newMovieList = [...totalMovieRates, data];
+    storage.setData(KEY.movieList, newMovieList);
+  },
+  checkHasRated(movieId) {
+    const totalMovieRates = this.getRateList();
+    return totalMovieRates.filter(({ id }) => id === movieId).length > 0;
+  },
+  getRateStars(rate) {
+    return calculateFilledStar(rate);
+  }
 };
 const selectElement = (selector, ancestor = document) => {
   const element = ancestor.querySelector(selector);
@@ -71,6 +280,66 @@ const toggleElementVisibility = (element, option) => {
   if (option === "show") element.classList.remove("hidden");
   if (option === "hidden") element.classList.add("hidden");
 };
+const _ScrollRenderer = class _ScrollRenderer {
+  static getInstance() {
+    if (!__privateGet(_ScrollRenderer, _instance)) {
+      __privateSet(_ScrollRenderer, _instance, new _ScrollRenderer());
+    }
+    return __privateGet(_ScrollRenderer, _instance);
+  }
+  createObserverCallback(callback) {
+    return (entries, observer) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          callback(observer);
+          observer.unobserve(entry.target);
+        }
+      });
+    };
+  }
+  setNewObservingTarget(observer, selector) {
+    const newTarget = selectElement(selector);
+    if (newTarget) {
+      observer.observe(newTarget);
+    }
+  }
+};
+_instance = new WeakMap();
+__privateAdd(_ScrollRenderer, _instance);
+let ScrollRenderer = _ScrollRenderer;
+class Banner {
+  constructor(topMovie) {
+    __privateAdd(this, _topMovie);
+    __privateSet(this, _topMovie, topMovie);
+  }
+  renderTitleMovie() {
+    const { title, voteAverage, backdropPath } = __privateGet(this, _topMovie);
+    const movieBackdropUrl = IMAGE.backdropPrefix + backdropPath;
+    const topMovieTitle = selectElement(
+      ".top-rated-movie .title"
+    );
+    const topMovieRateValue = selectElement(
+      ".top-rated-movie .rate-value"
+    );
+    const backgroundOverlay = selectElement(
+      ".background-container .overlay"
+    );
+    topMovieTitle.textContent = title;
+    topMovieRateValue.textContent = String(voteAverage);
+    backgroundOverlay.style.backgroundImage = `url("${movieBackdropUrl}")`;
+  }
+  static hiddenTitleMovie() {
+    const overlay = selectElement(".overlay");
+    const topRatedContainer = selectElement(".top-rated-movie");
+    const backgroundContainer = selectElement(
+      ".background-container"
+    );
+    overlay.style.display = "none";
+    topRatedContainer.style.display = "none";
+    backgroundContainer.style.height = "auto";
+  }
+}
+_topMovie = new WeakMap();
 class TextButton {
   constructor({ id, title, onClick, type }) {
     __privateAdd(this, _id);
@@ -141,308 +410,6 @@ _ErrorUI_instances = new WeakSet();
 handleClickRoutingHome_fn = function() {
   window.location.reload();
 };
-const TMDB_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1NjQxN2MwZDNkYmUzMjA5NGI5MjI2OTk2MzljNGQ4YSIsIm5iZiI6MTc0MjI3OTY4MS41NTgsInN1YiI6IjY3ZDkxNDAxZTFlM2NkY2JmOWM2YTQyNSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.U1Ea23_icQxUqe9m-t80lX49HV6QQJlFrMAGZJjpIvk";
-const BASE_URL = "https://api.themoviedb.org/3";
-const OPTION = {
-  language: "ko-KR",
-  region: "KR"
-};
-const options = {
-  method: "GET",
-  headers: {
-    Authorization: `Bearer ${TMDB_TOKEN}`
-  }
-};
-const api = {
-  async GETWithAuth(endpoint) {
-    try {
-      const url = `${BASE_URL}${endpoint}`;
-      const response = await fetch(url, options);
-      if (!response.ok) {
-        throw new Error(response.status.toString());
-      }
-      return await response.json();
-    } catch (error) {
-      if (error instanceof Error) {
-        if (error.message.includes(ERROR.NETWORK_ERROR_MESSAGE)) {
-          const errorUI = new ErrorUI({ message: ERROR.DEFAULT });
-          errorUI.create();
-          errorUI.renderError();
-        } else {
-          throw error;
-        }
-      }
-    }
-  }
-};
-const defaultParams = {
-  language: OPTION.language,
-  region: OPTION.region
-};
-const movieApi = {
-  async getMovieData(pageNumber) {
-    try {
-      const params = new URLSearchParams({
-        ...defaultParams,
-        page: pageNumber.toString()
-      }).toString();
-      const endpoint = `/movie/popular?${params}`;
-      return await api.GETWithAuth(endpoint);
-    } catch (error) {
-      if (error instanceof Error) {
-        throw error;
-      }
-    }
-  },
-  async getSearchData(pageNumber, query) {
-    try {
-      const params = new URLSearchParams({
-        ...defaultParams,
-        page: pageNumber.toString(),
-        query
-      }).toString();
-      const endpoint = `/search/movie?${params}`;
-      return await api.GETWithAuth(endpoint);
-    } catch (error) {
-      if (error instanceof Error) {
-        throw error;
-      }
-    }
-  },
-  async getMovieDetailsData(id) {
-    try {
-      const params = new URLSearchParams({
-        ...defaultParams
-      }).toString();
-      const endpoint = `/movie/${id}?${params}`;
-      return await api.GETWithAuth(endpoint);
-    } catch (error) {
-      if (error instanceof Error) {
-        throw error;
-      }
-    }
-  }
-};
-const KEY = {
-  movieList: "movieList"
-};
-const IMAGE = {
-  prefix: "https://media.themoviedb.org/t/p/w440_and_h660_face",
-  backdropPrefix: "https://image.tmdb.org/t/p/w1920_and_h800_multi_faces"
-};
-const ITEMS = {
-  perPage: 20,
-  initialCount: 0
-};
-const DETAILS = {
-  defaultOverview: "줄거리 정보가 없습니다."
-};
-const VOTE = {
-  rateDegit: 1,
-  defaultRate: 0,
-  MaximumRate: 10,
-  maximumIconCount: 5,
-  unitRate: 2,
-  noticeMessage: "평점 없음",
-  filledStarImage: "./images/star_filled.png",
-  emptyStarImage: "./images/star_empty.png"
-};
-const RATING_SCORE = {
-  1: 2,
-  2: 4,
-  3: 6,
-  4: 8,
-  5: 10
-};
-const RATING_MESSAGE = {
-  2: "최악이예요",
-  4: "별로예요",
-  6: "보통이에요",
-  8: "재미있어요",
-  10: "명작이에요"
-};
-const calculatePageNumber = (totalMovies) => {
-  return Math.ceil(totalMovies / ITEMS.perPage) + 1;
-};
-const getMovieRate = (movieRate) => {
-  return movieRate ? movieRate.rate : VOTE.defaultRate;
-};
-const calculateFilledStar = (rate) => {
-  return rate / VOTE.unitRate;
-};
-const extractTotalMovies = (totalData) => {
-  const { results, total_pages, total_results } = totalData;
-  const movies = results.map((movieData) => extractMovie(movieData));
-  return {
-    results: movies,
-    totalPages: total_pages,
-    totalResults: total_results
-  };
-};
-const extractMovie = (movieData) => {
-  const { id, backdrop_path, poster_path, title, vote_average } = movieData;
-  const backdropPath = IMAGE.backdropPrefix + backdrop_path;
-  const posterPath = IMAGE.prefix + poster_path;
-  const voteAverage = Number(vote_average.toFixed(VOTE.rateDegit));
-  return {
-    id,
-    backdropPath,
-    posterPath,
-    title,
-    voteAverage
-  };
-};
-const extractMovieDetails = (movieDetailsData, movieRate) => {
-  const {
-    genres,
-    id,
-    overview,
-    poster_path,
-    release_date,
-    title,
-    vote_average
-  } = movieDetailsData;
-  const genreNames = genres.map(({ name }) => name);
-  const formattedOverview = overview === "" ? DETAILS.defaultOverview : overview;
-  const posterPath = IMAGE.prefix + poster_path;
-  const releaseYear = new Date(release_date).getFullYear();
-  const voteAverage = Number(vote_average.toFixed(VOTE.rateDegit));
-  const rate = getMovieRate(movieRate);
-  return {
-    genres: genreNames,
-    id,
-    overview: formattedOverview,
-    posterPath,
-    releaseYear,
-    title,
-    voteAverage,
-    rate
-  };
-};
-const storage = {
-  localStorage: window.localStorage,
-  getData(key) {
-    return this.localStorage.getItem(key);
-  },
-  setData(key, data) {
-    this.localStorage.setItem(key, data);
-  },
-  removeData(key) {
-    this.localStorage.removeItem(key);
-  }
-};
-const movieService = {
-  async getMovies(totalCount) {
-    const pageNumber = calculatePageNumber(totalCount);
-    const rawData = await movieApi.getMovieData(pageNumber);
-    return extractTotalMovies(rawData);
-  },
-  async searchMovies(totalCount, query) {
-    const pageNumber = calculatePageNumber(totalCount);
-    const rawData = await movieApi.getSearchData(pageNumber, query);
-    return extractTotalMovies(rawData);
-  },
-  async getMovieDetail(movieId) {
-    const rawData = await movieApi.getMovieDetailsData(movieId);
-    const movieRate = this.getRateById(movieId);
-    return extractMovieDetails(rawData, movieRate);
-  },
-  getRateList() {
-    const rate = storage.getData(KEY.movieList) ?? "[]";
-    return JSON.parse(rate);
-  },
-  getRateById(movieId) {
-    const totalMovieRates = this.getRateList();
-    const targetRate = totalMovieRates.find(({ id }) => {
-      return id === movieId;
-    });
-    return targetRate ?? null;
-  },
-  updateRateById(id, newData) {
-    const totalMovieRates = this.getRateList();
-    const storedMoviesRates = totalMovieRates.filter(
-      (data) => {
-        return data.id !== id;
-      }
-    );
-    const newMovieList = [...storedMoviesRates, newData];
-    const stringifyData = JSON.stringify(newMovieList);
-    storage.setData(KEY.movieList, stringifyData);
-  },
-  addRate(data) {
-    const totalMovieRates = this.getRateList();
-    const newMovieList = [...totalMovieRates, data];
-    const stringifyData = JSON.stringify(newMovieList);
-    storage.setData(KEY.movieList, stringifyData);
-  },
-  checkHasRated(movieId) {
-    const totalMovieRates = this.getRateList();
-    return totalMovieRates.filter(({ id }) => id === movieId).length > 0;
-  },
-  getRateStars(rate) {
-    return calculateFilledStar(rate);
-  }
-};
-const _ScrollRenderer = class _ScrollRenderer {
-  static getInstance() {
-    if (!__privateGet(_ScrollRenderer, _instance)) {
-      __privateSet(_ScrollRenderer, _instance, new _ScrollRenderer());
-    }
-    return __privateGet(_ScrollRenderer, _instance);
-  }
-  createObserverCallback(fetch2, movieList) {
-    return (entries, observer) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          fetch2(movieList, observer, _ScrollRenderer.getInstance());
-          observer.unobserve(entry.target);
-        }
-      });
-    };
-  }
-  setNewObservingTarget(observer, selector) {
-    const newTarget = selectElement(selector);
-    if (newTarget) {
-      observer.observe(newTarget);
-    }
-  }
-};
-_instance = new WeakMap();
-__privateAdd(_ScrollRenderer, _instance);
-let ScrollRenderer = _ScrollRenderer;
-class Banner {
-  constructor(topMovie) {
-    __privateAdd(this, _topMovie);
-    __privateSet(this, _topMovie, topMovie);
-  }
-  renderTitleMovie() {
-    const { title, voteAverage, backdropPath } = __privateGet(this, _topMovie);
-    const movieBackdropUrl = IMAGE.backdropPrefix + backdropPath;
-    const topMovieTitle = selectElement(
-      ".top-rated-movie .title"
-    );
-    const topMovieRateValue = selectElement(
-      ".top-rated-movie .rate-value"
-    );
-    const backgroundOverlay = selectElement(
-      ".background-container .overlay"
-    );
-    topMovieTitle.textContent = title;
-    topMovieRateValue.textContent = String(voteAverage);
-    backgroundOverlay.style.backgroundImage = `url("${movieBackdropUrl}")`;
-  }
-  static hiddenTitleMovie() {
-    const overlay = selectElement(".overlay");
-    const topRatedContainer = selectElement(".top-rated-movie");
-    const backgroundContainer = selectElement(
-      ".background-container"
-    );
-    overlay.style.display = "none";
-    topRatedContainer.style.display = "none";
-    backgroundContainer.style.height = "auto";
-  }
-}
-_topMovie = new WeakMap();
 class MovieItem {
   constructor({ id, title, voteAverage, posterPath }) {
     __privateAdd(this, _id2);
@@ -865,8 +832,6 @@ const _SkeletonUl = class _SkeletonUl {
     toggleElementVisibility(__privateGet(this, _element5), "show");
     try {
       return await callback();
-    } catch (error) {
-      throw error;
     } finally {
       toggleElementVisibility(__privateGet(this, _element5), "hidden");
     }
@@ -923,14 +888,17 @@ _query = new WeakMap();
 _SearchBar_instances = new WeakSet();
 onSearch_fn = async function(movieList) {
   const totalItems = movieList.getTotalItems();
-  const results = await __privateMethod(this, _SearchBar_instances, getSearchResults_fn).call(this, totalItems, __privateGet(this, _query));
-  if (results) {
+  const movieData = await __privateMethod(this, _SearchBar_instances, getSearchResults_fn).call(this, totalItems, __privateGet(this, _query));
+  if (movieData) {
+    const { results } = movieData;
     const movieItems = __privateMethod(this, _SearchBar_instances, createResultMovieItems_fn).call(this, results);
     movieList.updateList(movieItems);
     const scrollRenderer = ScrollRenderer.getInstance();
     const updateList = __privateMethod(this, _SearchBar_instances, updateMovieList_fn).bind(this);
     const lastMovieItemObserver = new IntersectionObserver(
-      scrollRenderer.createObserverCallback(updateList, movieList),
+      scrollRenderer.createObserverCallback(
+        (observer) => updateList(movieList, observer, scrollRenderer)
+      ),
       { threshold: 1 }
     );
     const targetElement = selectElement(
@@ -941,8 +909,13 @@ onSearch_fn = async function(movieList) {
 };
 updateMovieList_fn = async function(movieList, observer, scrollRenderer) {
   const totalItems = movieList.getTotalItems();
-  const results = await __privateMethod(this, _SearchBar_instances, getSearchResults_fn).call(this, totalItems, __privateGet(this, _query));
-  if (results) {
+  const movieData = await __privateMethod(this, _SearchBar_instances, getSearchResults_fn).call(this, totalItems, __privateGet(this, _query));
+  if (movieData) {
+    const { results, page, totalPages } = movieData;
+    if (page >= totalPages) {
+      observer.disconnect();
+      return;
+    }
     const movieItems = __privateMethod(this, _SearchBar_instances, createResultMovieItems_fn).call(this, results);
     movieList.updateList(movieItems);
     scrollRenderer.setNewObservingTarget(
@@ -990,11 +963,11 @@ createResultMovieItems_fn = function(movies) {
 };
 getSearchResults_fn = async function(totalItems, query) {
   try {
-    const { results, totalResults } = await SkeletonUl.getInstance().getLoadingResult(
+    const { totalResults, ...movieData } = await SkeletonUl.getInstance().getLoadingResult(
       () => movieService.searchMovies(totalItems, query)
     );
     NonResultUI.getInstance().toggle(totalResults);
-    return results;
+    return movieData;
   } catch (error) {
     if (error instanceof Error) {
       const status = Number(error.message);
@@ -1106,7 +1079,11 @@ const updateMovieList = async (movieList, observer, scrollRenderer) => {
   const totalItems = movieList.getTotalItems();
   const movieData = await getMovieData(totalItems);
   if (movieData) {
-    const { results } = movieData;
+    const { page, results, totalPages } = movieData;
+    if (page >= totalPages) {
+      observer.disconnect();
+      return;
+    }
     const movieItems = createMovieItems(results);
     movieList.updateList(movieItems);
     scrollRenderer.setNewObservingTarget(
@@ -1134,7 +1111,9 @@ const app = async () => {
     movieList.onMovieClick(detailsModal);
     const scrollRenderer = ScrollRenderer.getInstance();
     const lastMovieItemObserver = new IntersectionObserver(
-      scrollRenderer.createObserverCallback(updateMovieList, movieList),
+      scrollRenderer.createObserverCallback(
+        (observer) => updateMovieList(movieList, observer, scrollRenderer)
+      ),
       { threshold: 1 }
     );
     const targetElement = selectElement(
